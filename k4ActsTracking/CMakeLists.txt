@@ -26,7 +26,7 @@ install(TARGETS k4ActsTracking
   INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
 
-file(GLOB _plugin_sources src/components/*.cpp)
+file(GLOB _plugin_sources src/components/*.c*)
 gaudi_add_module(k4ActsTrackingPlugins
   SOURCES ${_plugin_sources}
   LINK
