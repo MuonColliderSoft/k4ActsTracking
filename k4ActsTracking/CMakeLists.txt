@@ -37,7 +37,7 @@ gaudi_add_module(k4ActsTrackingPlugins
   ActsCore ActsPluginDD4hep
   )
 target_include_directories(k4ActsTrackingPlugins PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/k4ActsTracking>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 install(TARGETS k4ActsTrackingPlugins
