@@ -23,8 +23,8 @@
 #include <Acts/Geometry/TrackingVolumeArrayCreator.hpp>
 #include <Acts/MagneticField/ConstantBField.hpp>
 #include <Acts/Plugins/Json/JsonMaterialDecorator.hpp>
-#include <Acts/Plugins/TGeo/TGeoDetectorElement.hpp>
-#include <Acts/Plugins/TGeo/TGeoLayerBuilder.hpp>
+#include <Acts/Plugins/Root/TGeoDetectorElement.hpp>
+#include <Acts/Plugins/Root/TGeoLayerBuilder.hpp>
 
 // ACTSTracking
 #include "k4ActsTracking/Helpers.hxx"
@@ -68,7 +68,7 @@ std::shared_ptr<const Acts::TrackingGeometry> ACTSAlgBase::trackingGeometry() co
 }
 
 const Acts::Surface* ACTSAlgBase::findSurface(const edm4hep::TrackerHit hit) const {
-	uint64_t moduleGeoId = m_geoIDMappingTool->getGeometryID(hit);
+	Acts::GeometryIdentifier moduleGeoId = m_geoIDMappingTool->getGeometryID(hit);
 	return m_trackingGeometry->findSurface(moduleGeoId);
 }
 
@@ -210,11 +210,11 @@ void ACTSAlgBase::buildDetector() {
     layerBuilderConfig.autoSurfaceBinning = true;
 
     // AutoBinning
-    std::vector<std::pair<double, double>> binTolerances{(int)Acts::binValues,
+    std::vector<std::pair<double, double>> binTolerances{Acts::numAxisDirections(),
                                                          {0., 0.}};
-    binTolerances[Acts::binR] = {5, 5};
-    binTolerances[Acts::binZ] = {5, 5};
-    binTolerances[Acts::binPhi] = {0.025, 0.025};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisR)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisZ)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisPhi)] = {0.025, 0.025};
     layerBuilderConfig.surfaceBinMatcher =
         Acts::SurfaceBinningMatcher(binTolerances);
 
@@ -228,13 +228,13 @@ void ACTSAlgBase::buildDetector() {
           0.1 * Acts::UnitConstants::mm, 0.1 * Acts::UnitConstants::mm);
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {0, 120}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {0, 120}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-285, -70}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-285, -70}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 1});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 1});
 
       // Save
       layerBuilderConfig.layerConfigurations[0].push_back(lConfig);
@@ -250,13 +250,13 @@ void ACTSAlgBase::buildDetector() {
           0.1 * Acts::UnitConstants::mm, 0.1 * Acts::UnitConstants::mm);
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {0, 120}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {0, 120}});
 
       // Fill the layer splitting parameters in r
-      lConfig.splitConfigs.push_back({Acts::binR, 0.1});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisR, 0.1});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-70, 70}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-70, 70}});
 
       // Save
       layerBuilderConfig.layerConfigurations[1].push_back(lConfig);
@@ -272,13 +272,13 @@ void ACTSAlgBase::buildDetector() {
           0.1 * Acts::UnitConstants::mm, 0.1 * Acts::UnitConstants::mm);
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {0, 120}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {0, 120}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {70, 285}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {70, 285}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 1});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 1});
 
       // Save
       layerBuilderConfig.layerConfigurations[2].push_back(lConfig);
@@ -294,11 +294,11 @@ void ACTSAlgBase::buildDetector() {
     layerBuilderConfig.autoSurfaceBinning = true;
 
     // AutoBinning
-    std::vector<std::pair<double, double>> binTolerances{(int)Acts::binValues,
+    std::vector<std::pair<double, double>> binTolerances{(int)Acts::numAxisDirections(),
                                                          {0., 0.}};
-    binTolerances[Acts::binR] = {5, 5};
-    binTolerances[Acts::binZ] = {5, 5};
-    binTolerances[Acts::binPhi] = {0.025, 0.025};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisR)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisZ)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisPhi)] = {0.025, 0.025};
     layerBuilderConfig.surfaceBinMatcher =
         Acts::SurfaceBinningMatcher(binTolerances);
 
@@ -310,13 +310,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {50, 500}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {50, 500}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-600, -500}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-600, -500}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 10});
 
       // Save
       layerBuilderConfig.layerConfigurations[0].push_back(lConfig);
@@ -330,13 +330,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {120, 500}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {120, 500}});
 
       // Fill the layer splitting parameters in r
-      lConfig.splitConfigs.push_back({Acts::binR, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisR, 10});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-500, 500}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-500, 500}});
 
       // Save
       layerBuilderConfig.layerConfigurations[1].push_back(lConfig);
@@ -350,13 +350,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {50, 500}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {50, 500}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {500, 600}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {500, 600}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 10});
 
       // Save
       layerBuilderConfig.layerConfigurations[2].push_back(lConfig);
@@ -372,11 +372,11 @@ void ACTSAlgBase::buildDetector() {
     layerBuilderConfig.autoSurfaceBinning = true;
 
     // AutoBinning
-    std::vector<std::pair<double, double>> binTolerances{(int)Acts::binValues,
+    std::vector<std::pair<double, double>> binTolerances{(int)Acts::numAxisDirections(),
                                                          {0., 0.}};
-    binTolerances[Acts::binR] = {5, 5};
-    binTolerances[Acts::binZ] = {5, 5};
-    binTolerances[Acts::binPhi] = {0.025, 0.025};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisR)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisZ)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisPhi)] = {0.025, 0.025};
     layerBuilderConfig.surfaceBinMatcher =
         Acts::SurfaceBinningMatcher(binTolerances);
 
@@ -388,13 +388,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {120, 600}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {120, 600}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-2210, -750}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-2210, -750}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 10});
 
       // Save
       layerBuilderConfig.layerConfigurations[0].push_back(lConfig);
@@ -408,13 +408,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {500, 600}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {500, 600}});
 
       // Fill the layer splitting parameters in r
-      lConfig.splitConfigs.push_back({Acts::binR, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisR, 10});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-750, 750}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-750, 750}});
 
       // Save
       layerBuilderConfig.layerConfigurations[1].push_back(lConfig);
@@ -428,13 +428,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {120, 600}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {120, 600}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {750, 2210}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {750, 2210}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 10});
 
       // Save
       layerBuilderConfig.layerConfigurations[2].push_back(lConfig);
@@ -450,11 +450,11 @@ void ACTSAlgBase::buildDetector() {
     layerBuilderConfig.autoSurfaceBinning = true;
 
     // AutoBinning
-    std::vector<std::pair<double, double>> binTolerances{(int)Acts::binValues,
+    std::vector<std::pair<double, double>> binTolerances{(int)Acts::numAxisDirections(),
                                                          {0., 0.}};
-    binTolerances[Acts::binR] = {5, 5};
-    binTolerances[Acts::binZ] = {5, 5};
-    binTolerances[Acts::binPhi] = {0.025, 0.025};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisR)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisZ)] = {5, 5};
+    binTolerances[toUnderlying(Acts::AxisDirection::AxisPhi)] = {0.025, 0.025};
     layerBuilderConfig.surfaceBinMatcher =
         Acts::SurfaceBinningMatcher(binTolerances);
 
@@ -466,13 +466,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {570, 1550}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {570, 1550}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-2210, -1300}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-2210, -1300}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 10});
 
       // Save
       layerBuilderConfig.layerConfigurations[0].push_back(lConfig);
@@ -486,13 +486,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {600, 1550}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {600, 1550}});
 
       // Fill the layer splitting parameters in r
-      lConfig.splitConfigs.push_back({Acts::binR, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisR, 10});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {-1300, 1300}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {-1300, 1300}});
 
       // Save
       layerBuilderConfig.layerConfigurations[1].push_back(lConfig);
@@ -506,13 +506,13 @@ void ACTSAlgBase::buildDetector() {
       lConfig.localAxes = "XYZ";
 
       // Fill the parsing restrictions in r
-      lConfig.parseRanges.push_back({Acts::binR, {570, 1550}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisR, {570, 1550}});
 
       // Fill the parsing restrictions in z
-      lConfig.parseRanges.push_back({Acts::binZ, {1300, 2210}});
+      lConfig.parseRanges.push_back({Acts::AxisDirection::AxisZ, {1300, 2210}});
 
       // Fill the layer splitting parameters in z
-      lConfig.splitConfigs.push_back({Acts::binZ, 10});
+      lConfig.splitConfigs.push_back({Acts::AxisDirection::AxisZ, 10});
 
       // Save
       layerBuilderConfig.layerConfigurations[2].push_back(lConfig);
@@ -579,7 +579,7 @@ void ACTSAlgBase::buildDetector() {
         -> void {
       for (const auto& lcfg : lConfigs) {
         for (const auto& scfg : lcfg.splitConfigs) {
-          if (scfg.first == Acts::binR and scfg.second > 0.) {
+          if (scfg.first == Acts::AxisDirection::AxisR and scfg.second > 0.) {
             volumeConfig.ringTolerance =
                 std::max(volumeConfig.ringTolerance, scfg.second);
             volumeConfig.checkRingLayout = true;
