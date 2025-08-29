@@ -1,5 +1,7 @@
 #include "k4ActsTracking/GeometryIdSelector.hxx"
 
+#include <algorithm>
+
 using namespace ACTSTracking;
 
 GeometryIdSelector::GeometryIdSelector(
@@ -23,19 +25,19 @@ GeometryIdSelector::Mask GeometryIdSelector::makeMask(
     return allSet.value();
   }
   if (id.approach() != 0u) {
-    return allSet.setSensitive(0u).value();
+    return allSet.withSensitive(0u).value();
   }
   if (id.layer() != 0u) {
-    return allSet.setSensitive(0u).setApproach(0u).value();
+    return allSet.withSensitive(0u).withApproach(0u).value();
   }
   if (id.boundary() != 0u) {
-    return allSet.setSensitive(0u).setApproach(0u).setLayer(0u).value();
+    return allSet.withSensitive(0u).withApproach(0u).withLayer(0u).value();
   }
   if (id.volume() != 0u) {
-    return allSet.setSensitive(0u)
-        .setApproach(0u)
-        .setLayer(0u)
-        .setBoundary(0u)
+    return allSet.withSensitive(0u)
+        .withApproach(0u)
+        .withLayer(0u)
+        .withBoundary(0u)
         .value();
   }
   // no valid levels; all bits are zero.
