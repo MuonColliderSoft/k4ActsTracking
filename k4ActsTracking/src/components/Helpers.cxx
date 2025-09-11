@@ -91,8 +91,8 @@ edm4hep::MutableTrack* ACTS2edm4hep_track(const TrackResult& fitter_res,
 		Acts::Vector3 field = *fieldRes;
 
 		edm4hep::TrackState* trackState = ACTSTracking::ACTS2edm4hep_trackState(
-			edm4hep::TrackState::AtOther, trk_state.smoothed(), 
-			trk_state.smoothedCovariance(), field[2] / Acts::UnitConstants::T);
+			edm4hep::TrackState::AtOther, trk_state.parameters(), 
+			trk_state.covariance(), field[2] / Acts::UnitConstants::T);
 		statesOnTrack.push_back(*trackState);
 	}
 
