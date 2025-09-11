@@ -359,9 +359,6 @@ std::tuple<edm4hep::TrackCollection,
 	const Acts::GridBinFinder<3ul> bottomBinFinder(m_phiBottomBinLen.value(), m_zBottomBinLen.value(), 0);
 	const Acts::GridBinFinder<3ul> topBinFinder(m_phiTopBinLen.value(), m_zTopBinLen.value(), 0);
 
-	auto spacePointsGrouping = Acts::CylindricalBinnedGroup<SSPoint>(
-		std::move(grid), bottomBinFinder, topBinFinder);
-
 	Acts::SeedFinder<SSPoint, SSPointGrid> finder(finderCfg);
 	decltype(finder)::SeedingState state;
 	std::vector<Acts::Seed<SSPoint>> seeds;
@@ -379,6 +376,9 @@ std::tuple<edm4hep::TrackCollection,
 		minRange = std::min(firstEl->radius(), minRange);
 		maxRange = std::max(lastEl->radius(), maxRange);
 	}
+
+	auto spacePointsGrouping = Acts::CylindricalBinnedGroup<SSPoint>(
+		std::move(grid), bottomBinFinder, topBinFinder);
 
 	const Acts::Range1D<float> rMiddleSPRange(
 		std::floor(minRange / 2) * 2 + finderCfg.deltaRMiddleMinSPRange,
