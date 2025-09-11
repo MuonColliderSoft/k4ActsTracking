@@ -500,7 +500,18 @@ std::tuple<edm4hep::TrackCollection,
 			auto result = trackFinder.findTracks(paramseeds.at(iseed), ckfOptions, tracks);
 			if (result.ok()) {
 				const auto& fitOutput = result.value();
-				for (const TrackContainer::TrackProxy& trackTip : fitOutput) {
+				for (const TrackContainer::TrackProxy& trackItem : fitOutput) {
+
+					// Track smoothing
+					auto trackTip = tracks.makeTrack();
+				    trackTip.copyFrom(trackItem, true);
+				    auto smoothResult = Acts::smoothTrack(geometryContext(), trackTip);
+				    if (!smoothResult.ok())
+				    {
+				        warning() << "Track smoothing error: " << smoothResult.error() << endmsg;
+				        continue;
+				    }
+
 					// Helpful debug output
 					debug() << "Trajectory Summary" << endmsg;
 					debug() << "\tchi2Sum       " << trackTip.chi2() << endmsg;
