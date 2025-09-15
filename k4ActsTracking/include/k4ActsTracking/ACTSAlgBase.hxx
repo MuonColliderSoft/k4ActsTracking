@@ -79,6 +79,9 @@ protected:
 	//! Path to tracker geometry file
 	Gaudi::Property<std::string> m_tgeoFile{this, "TGeoFile", std::string(""), "Path to the tracker geometry file."};
 
+	//! Path to tracker geometry description file
+	Gaudi::Property<std::string> m_descrFile{this, "TGeoDescFile", std::string(""), "Path to the JSON file describing the subdetectors."};
+
 	//! Encoding String for Tracker CellIDs
 	Gaudi::Property<std::string> m_encodingStringVariable{this, "EncodingStringParameterName", "GlobalTrackerReadoutID", "The name of the DD4hep constant that contains the Encoding string for the detector"};
 
