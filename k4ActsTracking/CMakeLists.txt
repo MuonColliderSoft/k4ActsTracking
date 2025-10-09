@@ -54,6 +54,7 @@ gaudi_add_module(k4ActsTrackingPlugins
   k4FWCore::k4FWCore
   EDM4HEP::edm4hep
   DD4hep::DDCore DD4hep::DDRec
+  ${LUA_LIBRARIES}
   ${ACTS_PLUGIN_TARGETS}
 )
 target_include_directories(k4ActsTrackingPlugins PUBLIC

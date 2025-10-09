@@ -32,7 +32,7 @@
 #include <string>
 
 // ACTSTracking
-#include "k4ActsTracking/GeometryIdMappingTool.hxx"
+#include "k4ActsTracking/LuaGeometryIDMapper.hxx"
 
 //! Base processor for ACTS tracking
 /**
@@ -84,6 +84,9 @@ protected:
 	//! Path to tracker geometry file
 	Gaudi::Property<std::string> m_tgeoFile{this, "TGeoFile", std::string(""), "Path to the tracker geometry file."};
 
+	//! Path to tracker geometry description file
+	Gaudi::Property<std::string> m_descrFile{this, "TGeoDescFile", std::string(""), "Path to the JSON file describing the subdetectors."};
+
 	//! Encoding String for Tracker CellIDs
 	Gaudi::Property<std::string> m_encodingStringVariable{this, "EncodingStringParameterName", "GlobalTrackerReadoutID", "The name of the DD4hep constant that contains the Encoding string for the detector"};
 
@@ -92,7 +95,7 @@ protected:
  	 * @brief Gets the geometry Mapping Tool (To decode Cell IDs)
  	 * @return ACTSTracking Geometry Mapping Tool
  	 */
-	std::shared_ptr<ACTSTracking::GeometryIdMappingTool> geoIDMappingTool() const;
+	std::shared_ptr<ACTSTracking::LuaGeometryIDMapper> geoIDMappingTool() const;
 
 	/**
  	 * @brief Gets the Magnetic Field Context (ACTS)
@@ -129,7 +132,7 @@ protected:
 	const Acts::Surface* findSurface(const edm4hep::TrackerHit hit) const;
 
 private:
-	std::shared_ptr<ACTSTracking::GeometryIdMappingTool> m_geoIDMappingTool; ///< Tool to decode Cell IDs
+	std::shared_ptr<ACTSTracking::LuaGeometryIDMapper> m_geoIDMappingTool; ///< Tool to decode Cell IDs
 
 	Acts::MagneticFieldContext m_magneticFieldContext; ///< Magnetic Field Context
 	std::shared_ptr<Acts::MagneticFieldProvider> m_magneticField; ///< Actual Magnetic Field

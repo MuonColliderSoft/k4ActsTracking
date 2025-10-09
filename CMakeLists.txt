@@ -26,6 +26,8 @@ find_package(k4FWCore)
 find_package(Acts REQUIRED COMPONENTS Core PluginDD4hep)
 find_package(DD4hep)
 
+find_package(Lua REQUIRED)
+
 #---------------------------------------------------------------
 # Load macros and functions for Gaudi-based projects
 
