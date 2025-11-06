@@ -64,3 +64,20 @@ target_include_directories(test_Helpers PRIVATE
 
 add_test(NAME test_Helpers COMMAND test_Helpers)
 set_test_env(test_Helpers)
+
+# Test for Geometry context and operations
+add_executable(test_Geometry test_Geometry.cpp)
+target_link_libraries(test_Geometry
+  PRIVATE
+  k4ActsTracking
+  k4FWCore::k4FWCore
+  ${ACTS_LIBRARY_TARGETS}
+  GTest::gtest
+  GTest::gtest_main
+)
+target_include_directories(test_Geometry PRIVATE
+  ${CMAKE_SOURCE_DIR}/k4ActsTracking/include
+)
+
+add_test(NAME test_Geometry COMMAND test_Geometry)
+set_test_env(test_Geometry)

@@ -38,6 +38,21 @@ Unit tests verify individual components and functions in isolation. These tests 
      - Covariance matrix property validation
      - Placeholder for future ACTS ↔ EDM4HEP conversions
 
+3. **test_Geometry.cpp**
+   - Tests for geometry context operations
+   - Validates Acts::GeometryContext usage
+   - Coverage:
+     - Geometry context creation and copying
+     - Context assignment and lifecycle
+     - Multiple concurrent contexts
+     - Const correctness
+     - Placeholders for surface maps and tracking geometry
+
+4. **TestMocks.h**
+   - Mock implementations for testing
+   - MockMessageSvc for logger testing
+   - Reusable test utilities
+
 ### Integration Tests (`options/`)
 
 Integration tests verify the complete workflow and component interactions using the Gaudi framework via k4run.
@@ -87,6 +102,7 @@ ctest -R test_
 # Run specific unit test
 ./test/unit/test_ActsGaudiLogger
 ./test/unit/test_Helpers
+./test/unit/test_Geometry
 
 # Run only integration tests
 ctest -R LoadODD
