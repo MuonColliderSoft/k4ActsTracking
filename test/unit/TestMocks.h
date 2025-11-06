@@ -75,6 +75,7 @@ public:
   void eraseStream(std::string_view) override {}
   void eraseStream() override {}
 
+  // Note: "desactivate" spelling matches Gaudi's IMessageSvc interface
   void desactivateStream(int) override {}
   void desactivateStream(std::string_view) override {}
 

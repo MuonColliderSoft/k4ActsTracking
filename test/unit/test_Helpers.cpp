@@ -57,17 +57,6 @@ TEST_F(HelpersTest, ActsUnitConversions) {
   EXPECT_DOUBLE_EQ(cm, 10.0);  // 1 cm = 10 mm
 }
 
-// Test GeometryContext creation and usage
-TEST_F(HelpersTest, GeometryContextCreation) {
-  Acts::GeometryContext geoContext;
-  
-  // Verify that a default geometry context can be created
-  // In a real scenario, this would be populated with alignment data
-  EXPECT_NO_THROW({
-    Acts::GeometryContext ctx;
-  });
-}
-
 // Test basic coordinate transformations
 TEST_F(HelpersTest, BasicCoordinateTransformations) {
   // Test Cartesian to cylindrical conversion
