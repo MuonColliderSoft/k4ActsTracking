@@ -184,10 +184,11 @@ TEST_F(GeometryTest, GeometryContextLifecycle) {
   }
   // Context destroyed when out of scope
   
-  Acts::GeometryContext* dynamicCtx = new Acts::GeometryContext();
-  delete dynamicCtx;
-  
-  // Smart pointer management
+  // Smart pointer management - demonstrates proper modern C++ memory management
   auto smartCtx = std::make_unique<Acts::GeometryContext>();
   EXPECT_NE(smartCtx, nullptr);
+  
+  // Can also use shared pointers for shared ownership scenarios
+  auto sharedCtx = std::make_shared<Acts::GeometryContext>();
+  EXPECT_NE(sharedCtx, nullptr);
 }

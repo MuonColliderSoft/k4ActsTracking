@@ -18,7 +18,6 @@
  */
 
 #include <Acts/Definitions/Units.hpp>
-#include <Acts/Geometry/GeometryContext.hpp>
 #include <gtest/gtest.h>
 
 #include <cmath>
