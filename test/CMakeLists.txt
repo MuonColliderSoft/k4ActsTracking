@@ -30,6 +30,10 @@ function(set_test_env _testname)
   set_property(TEST ${_testname} APPEND PROPERTY ENVIRONMENT "PYTHONPATH=${PROJECT_BINARY_DIR}/${CMAKE_PROJECT_NAME}/${GAUDI_GENCONF_DIR}:$ENV{PYTHONPATH}")
 endfunction()
 
+# Unit tests
+add_subdirectory(unit)
+
+# Integration tests
 add_test(NAME LoadODD
          WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
          COMMAND k4run options/geosvc.py)
