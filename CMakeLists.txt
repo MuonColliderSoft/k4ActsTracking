@@ -29,6 +29,7 @@ SET( ${PROJECT_NAME}_VERSION  "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME
 find_package(k4FWCore REQUIRED)
 find_package(Acts REQUIRED COMPONENTS Core PluginDD4hep)
 find_package(DD4hep REQUIRED COMPONENTS DDCore DDRec)
+find_package(TBB REQUIRED)
 
 include(cmake/Key4hepConfig.cmake)
 

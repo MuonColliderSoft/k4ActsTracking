@@ -54,15 +54,11 @@ namespace ACTSTracking {
 
   /**
  * @brief Workaround function to get around comparision issue
- * @TODO: This is to get around an issue in edm4hep
  * @param hit1 A hit
  * @param hits A hit
  */
   bool hitEqual(const edm4hep::TrackerHit& hit1, const edm4hep::TrackerHit& hit2) {
-    return hit1.getCellID() == hit2.getCellID() && hit1.getType() == hit2.getType() &&
-           hit1.getQuality() == hit2.getQuality() && hit1.getTime() == hit2.getTime() &&
-           hit1.getEDep() == hit2.getEDep() && hit1.getEDepError() == hit2.getEDepError() &&
-           hit1.getPosition() == hit2.getPosition();
+    return hit1 == hit2;
   }
 
   /**
@@ -101,19 +97,21 @@ ACTSDuplicateRemoval::ACTSDuplicateRemoval(const std::string& name, ISvcLocator*
                   KeyValues("OutputTrackCollectionName", {"DedupedTruthTracks"})) {}
 
 edm4hep::TrackCollection ACTSDuplicateRemoval::operator()(const edm4hep::TrackCollection& trackCollection) const {
-  MsgStream log(msgSvc(), name());
-
   // Make output collection
   edm4hep::TrackCollection outputTracks;
   outputTracks.setSubsetCollection();
 
   // Insertion sort input tracks
   std::vector<edm4hep::Track> sortedInput;
+  sortedInput.reserve(trackCollection.size());
   for (const auto& track : trackCollection) {
-    auto insertion_point =
-        std::upper_bound(sortedInput.begin(), sortedInput.end(), track, ACTSTracking::track_duplicate_compare);
-    sortedInput.insert(insertion_point, track);
+    sortedInput.push_back(track);
   }
+
+  std::stable_sort(
+      sortedInput.begin(), sortedInput.end(),
+      ACTSTracking::track_duplicate_compare
+  );
 
   int total = 0;
   int dupes = 0;
