@@ -113,14 +113,10 @@ edm4hep::TrackCollection ACTSDuplicateRemoval::operator()(const edm4hep::TrackCo
       ACTSTracking::track_duplicate_compare
   );
 
-  int total = 0;
-  int dupes = 0;
-  int added = 0;
   // Loop through all inputs and search for nearby equals
   // Remove if they are too similar
   std::vector<edm4hep::Track> finalTracks;
   for (const edm4hep::Track& track : sortedInput) {
-    total++;
     bool   foundAnEqual = false;
     size_t startIdx     = (finalTracks.size() >= 10) ? finalTracks.size() - 10 : 0;
     for (size_t i = startIdx; i < finalTracks.size(); ++i) {
@@ -129,14 +125,12 @@ edm4hep::TrackCollection ACTSDuplicateRemoval::operator()(const edm4hep::TrackCo
       if (!ACTSTracking::tracks_equal(track, otherTrack))
         continue;
       foundAnEqual = true;
-      dupes++;
       if (ACTSTracking::track_quality_compare(track, otherTrack)) {
         finalTracks[i] = track;
         break;
       }
     }
     if (!foundAnEqual) {
-      added++;
       finalTracks.push_back(track);
     }
   }
