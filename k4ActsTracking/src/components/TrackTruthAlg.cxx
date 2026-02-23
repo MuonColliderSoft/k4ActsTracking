@@ -101,7 +101,7 @@ std::tuple<edm4hep::TrackMCParticleLinkCollection> TrackTruthAlg::operator()(
         const bool better  = (matchIt == localBest.end()) ||  // no best matches exist
                              ((matchIt->second).frac < frac);  // this match is better (more hits on track)
         if (better) {
-          auto& matchInfo = matchIt->second;
+          auto& matchInfo = (matchIt == localBest.end()) ? localBest[mcParticle] : matchIt->second;
           matchInfo.track = track;
           matchInfo.frac  = frac;
         }
