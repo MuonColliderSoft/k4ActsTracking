@@ -385,7 +385,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
   using GroupIterator = decltype(spacePointsGrouping.begin());
   using GroupValue    = std::decay_t<decltype(*std::declval<GroupIterator>())>;
   std::vector<GroupValue> spacePointGroups;
-  spacePointGroups.reserve(spacePointsGrouping.size());
+  spacePointGroups.reserve(spacePointsGrouping.grid().size());
   for (auto it = spacePointsGrouping.begin(); it != spacePointsGrouping.end(); ++it) {
     spacePointGroups.push_back(*it);
   }
