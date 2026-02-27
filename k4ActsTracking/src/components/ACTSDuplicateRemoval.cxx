@@ -40,8 +40,8 @@ namespace ACTSTracking {
     uint32_t hitOlap = 0;
     // Loop through each track hit and see if it overlaps with the second track
     for (size_t itrackHit = 0; itrackHit < trk1.trackerHits_size(); ++itrackHit) {
-      auto it = std::find_if(trk2.trackerHits_begin(), trk2.trackerHits_end(),
-                             [&](const auto& hit2) { return hitEqual(trk1.getTrackerHits(itrackHit), hit2); });
+      auto it = std::find(trk2.trackerHits_begin(), trk2.trackerHits_end(),
+              trk1.getTrackerHits(itrackHit));
       if (it != trk2.trackerHits_end()) {
         hitOlap++;  // If it does overlap, increment hitOlap
       }

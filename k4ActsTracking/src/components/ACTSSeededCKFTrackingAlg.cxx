@@ -146,8 +146,9 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
   // Sort by GeoID
   auto compare = [](const auto& a, const auto& b) { return a.first < b.first; };
 
+  tbb::task_arena arena(m_numThreads.value());
+
   if (m_numThreads > 1) {
-    tbb::task_arena arena(m_numThreads.value());
     arena.execute([&] { tbb::parallel_sort(sortedHits.begin(), sortedHits.end(), compare); });
   } else {
     std::sort(sortedHits.begin(), sortedHits.end(), compare);
@@ -384,6 +385,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
   using GroupIterator = decltype(spacePointsGrouping.begin());
   using GroupValue    = std::decay_t<decltype(*std::declval<GroupIterator>())>;
   std::vector<GroupValue> spacePointGroups;
+  spacePointGroups.reserve(spacePointsGrouping.size());
   for (auto it = spacePointsGrouping.begin(); it != spacePointsGrouping.end(); ++it) {
     spacePointGroups.push_back(*it);
   }
@@ -420,7 +422,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
         const Acts::GeometryIdentifier& geoId      = sourceLink.geometryId();
         const Acts::Surface*            surface    = trackingGeometry()->findSurface(geoId);
         if (surface == nullptr) {
-          debug() << "surface with geoID " << geoId << " is not found in the tracking gemetry" << endmsg;
+          warning() << "surface with geoID " << geoId << " is not found in the tracking gemetry" << endmsg;
           continue;
         }
 
@@ -454,17 +456,10 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
         Acts::BoundTrackParameters paramseed(surface->getSharedPtr(), params, cov, Acts::ParticleHypothesis::pion());
         paramseeds.push_back(paramseed);
 
-        // Add seed to edm4hep collection
-        edm4hep::MutableTrack seedTrack;
-        {
-          std::lock_guard<std::mutex> lock(seedMutex);
-          seedTrack = seedCollection.create();
-        }
-
+        // Compute seed state before acquiring the lock
         Acts::Vector3 globalPos =
             surface->localToGlobal(geometryContext(), {params[Acts::eBoundLoc0], params[Acts::eBoundLoc1]}, {0, 0, 0});
 
-        // state
         Acts::Result<Acts::Vector3> hitField = magneticField()->getField(globalPos, magCache);
         if (!hitField.ok()) {
           throw std::runtime_error("Field lookup error: " + std::to_string(hitField.error().value()));
@@ -473,13 +468,15 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
         edm4hep::TrackState* seedTrackState = ACTSTracking::ACTS2edm4hep_trackState(
             edm4hep::TrackState::AtFirstHit, paramseed, (*hitField)[2] / Acts::UnitConstants::T);
 
-        // hits
-        for (const ACTSTracking::SeedSpacePoint* sp : seed.sp()) {
-          const ACTSTracking::SourceLink& sl = sp->sourceLink();
-          seedTrack.addToTrackerHits(sl.edm4hepHit());  //trackHit);
+        // Add seed to collection, all building of seed under the lock
+        {
+          std::lock_guard<std::mutex> lock(seedMutex);
+          auto seedTrack = seedCollection.create();
+          for (const ACTSTracking::SeedSpacePoint* sp : seed.sp()) {
+            seedTrack.addToTrackerHits(sp->sourceLink().edm4hepHit());
+          }
+          seedTrack.addToTrackStates(*seedTrackState);
         }
-
-        seedTrack.addToTrackStates(*seedTrackState);
 
         debug() << "Seed Paramemeters" << std::endl << paramseed << endmsg;
       }
@@ -528,7 +525,6 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
 
   // Run in parallel if more than one thread is requested
   if (m_numThreads > 1) {
-    tbb::task_arena arena(m_numThreads.value());
     arena.execute(
         [&] { tbb::parallel_for(tbb::blocked_range<size_t>(0, spacePointGroups.size()), parallelSeedingAndTracking); });
   } else {  // Serial execution
