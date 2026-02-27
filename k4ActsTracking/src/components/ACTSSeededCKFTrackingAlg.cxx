@@ -44,10 +44,10 @@
 #include <Acts/TrackFitting/GainMatrixUpdater.hpp>
 
 // TBB
+#include <tbb/concurrent_vector.h>
+#include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 #include <tbb/task_arena.h>
-#include <tbb/parallel_for.h>
-#include <tbb/concurrent_vector.h>
 
 //using namespace Acts::UnitLiterals;
 
@@ -115,7 +115,7 @@ StatusCode ACTSSeededCKFTrackingAlg::initialize() {
     m_seedFinding_deltaRMinBottom = m_seedFinding_deltaRMin;
   if (m_seedFinding_deltaRMaxBottom == 0.f)
     m_seedFinding_deltaRMaxBottom = m_seedFinding_deltaRMax;
-  
+
   debug() << "Initialization of ACTSSeededCKFTrackingAlg successful" << endmsg;
   return init;
 }
@@ -128,9 +128,9 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
 
   // Containers
   std::vector<std::pair<Acts::GeometryIdentifier, edm4hep::TrackerHitPlane>> sortedHits;
-  ACTSTracking::SourceLinkContainer     sourceLinks;
-  ACTSTracking::MeasurementContainer    measurements;
-  ACTSTracking::SeedSpacePointContainer spacePoints;
+  ACTSTracking::SourceLinkContainer                                          sourceLinks;
+  ACTSTracking::MeasurementContainer                                         measurements;
+  ACTSTracking::SeedSpacePointContainer                                      spacePoints;
 
   // Loop over each hit collections and get a single vector with hits
   // from all of the subdetectors. Also include the Acts GeoId in
@@ -148,9 +148,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
 
   if (m_numThreads > 1) {
     tbb::task_arena arena(m_numThreads.value());
-    arena.execute([&] {
-      tbb::parallel_sort(sortedHits.begin(), sortedHits.end(), compare);
-    });
+    arena.execute([&] { tbb::parallel_sort(sortedHits.begin(), sortedHits.end(), compare); });
   } else {
     std::sort(sortedHits.begin(), sortedHits.end(), compare);
   }
@@ -246,8 +244,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
 
   // Set the options
   Acts::MeasurementSelector::Config measurementSelectorCfg = {
-    { Acts::GeometryIdentifier(), { {}, {m_CKF_chi2CutOff}, {(std::size_t)(m_CKF_numMeasurementsCutOff)} } } 
-  };
+      {Acts::GeometryIdentifier(), {{}, {m_CKF_chi2CutOff}, {(std::size_t)(m_CKF_numMeasurementsCutOff)}}}};
 
   Acts::PropagatorPlainOptions pOptions{geometryContext(), magneticFieldContext()};
   pOptions.maxSteps = 10000;
@@ -271,7 +268,8 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
   TrackStateCreatorType trackStateCreator;
   trackStateCreator.sourceLinkAccessor.template connect<&ACTSTracking::SourceLinkAccessor::range>(&slAccessor);
   trackStateCreator.calibrator.template connect<&ACTSTracking::MeasurementCalibrator::calibrate>(&measCal);
-  trackStateCreator.measurementSelector.template connect<&Acts::MeasurementSelector::select<Acts::VectorMultiTrajectory>>(&measSel);
+  trackStateCreator.measurementSelector
+      .template connect<&Acts::MeasurementSelector::select<Acts::VectorMultiTrajectory>>(&measSel);
 
   Acts::CombinatorialKalmanFilterExtensions<TrackContainer> extensions;
   extensions.updater.connect<&Acts::GainMatrixUpdater::operator()<Acts::VectorMultiTrajectory>>(&kfUpdater);
@@ -379,14 +377,12 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
 
   auto spacePointsGrouping = Acts::CylindricalBinnedGroup<SSPoint>(std::move(grid), bottomBinFinder, topBinFinder);
 
-  const Acts::Range1D<float> rMiddleSPRange(
-    std::floor(minRange / 2) * 2 + finderCfg.deltaRMiddleMinSPRange,
-    std::floor(maxRange / 2) * 2 - finderCfg.deltaRMiddleMaxSPRange
-  );
+  const Acts::Range1D<float> rMiddleSPRange(std::floor(minRange / 2) * 2 + finderCfg.deltaRMiddleMinSPRange,
+                                            std::floor(maxRange / 2) * 2 - finderCfg.deltaRMiddleMaxSPRange);
 
   // Convert the binned group to a vector for access
   using GroupIterator = decltype(spacePointsGrouping.begin());
-  using GroupValue = std::decay_t<decltype(*std::declval<GroupIterator>())>;
+  using GroupValue    = std::decay_t<decltype(*std::declval<GroupIterator>())>;
   std::vector<GroupValue> spacePointGroups;
   for (auto it = spacePointsGrouping.begin(); it != spacePointsGrouping.end(); ++it) {
     spacePointGroups.push_back(*it);
@@ -405,18 +401,17 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
       decltype(finder)::SeedingState          state;
       state.spacePointMutableData.resize(spContainer.size());
 
-      finder.createSeedsForGroup(
-        finderOpts, state, spacePointsGrouping.grid(), seeds, bottom, middle, top, rMiddleSPRange
-      );
+      finder.createSeedsForGroup(finderOpts, state, spacePointsGrouping.grid(), seeds, bottom, middle, top,
+                                 rMiddleSPRange);
 
       // Loop over seeds and get track parameters
       std::vector<Acts::Seed<ACTSTracking::SeedSpacePoint>> f_seeds;
       f_seeds.reserve(seeds.size());
       for (const Acts::Seed<SSPoint>& seed : seeds) {
         const auto& sps = seed.sp();
-        f_seeds.emplace_back(*sps[0]->externalSpacePoint(), *sps[1]->externalSpacePoint(), *sps[2]->externalSpacePoint());
+        f_seeds.emplace_back(*sps[0]->externalSpacePoint(), *sps[1]->externalSpacePoint(),
+                             *sps[2]->externalSpacePoint());
       }
-
 
       for (const auto& seed : f_seeds) {
         const ACTSTracking::SeedSpacePoint* bottomSP = seed.sp().front();
@@ -476,8 +471,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
         }
 
         edm4hep::TrackState* seedTrackState = ACTSTracking::ACTS2edm4hep_trackState(
-          edm4hep::TrackState::AtFirstHit, paramseed, (*hitField)[2] / Acts::UnitConstants::T
-        );
+            edm4hep::TrackState::AtFirstHit, paramseed, (*hitField)[2] / Acts::UnitConstants::T);
 
         // hits
         for (const ACTSTracking::SeedSpacePoint* sp : seed.sp()) {
@@ -530,15 +524,14 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
         }
       }
     }
-  }; // parallelSeedingAndTracking
-  
+  };  // parallelSeedingAndTracking
+
   // Run in parallel if more than one thread is requested
   if (m_numThreads > 1) {
     tbb::task_arena arena(m_numThreads.value());
-    arena.execute([&] {
-      tbb::parallel_for(tbb::blocked_range<size_t>(0, spacePointGroups.size()), parallelSeedingAndTracking);
-    });
-  } else { // Serial execution
+    arena.execute(
+        [&] { tbb::parallel_for(tbb::blocked_range<size_t>(0, spacePointGroups.size()), parallelSeedingAndTracking); });
+  } else {  // Serial execution
     for (size_t i = 0; i < spacePointGroups.size(); ++i) {
       parallelSeedingAndTracking(tbb::blocked_range<size_t>(i, i + 1));
     }

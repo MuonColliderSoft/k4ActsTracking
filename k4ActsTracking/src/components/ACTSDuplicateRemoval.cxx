@@ -57,9 +57,7 @@ namespace ACTSTracking {
  * @param hit1 A hit
  * @param hits A hit
  */
-  bool hitEqual(const edm4hep::TrackerHit& hit1, const edm4hep::TrackerHit& hit2) {
-    return hit1 == hit2;
-  }
+  bool hitEqual(const edm4hep::TrackerHit& hit1, const edm4hep::TrackerHit& hit2) { return hit1 == hit2; }
 
   /**
  * @brief Determine which of two tracks is of better quality
@@ -108,10 +106,7 @@ edm4hep::TrackCollection ACTSDuplicateRemoval::operator()(const edm4hep::TrackCo
     sortedInput.push_back(track);
   }
 
-  std::stable_sort(
-      sortedInput.begin(), sortedInput.end(),
-      ACTSTracking::track_duplicate_compare
-  );
+  std::stable_sort(sortedInput.begin(), sortedInput.end(), ACTSTracking::track_duplicate_compare);
 
   // Loop through all inputs and search for nearby equals
   // Remove if they are too similar

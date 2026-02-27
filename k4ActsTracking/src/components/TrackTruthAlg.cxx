@@ -23,9 +23,9 @@
 #include "k4ActsTracking/Helpers.hxx"
 
 // TBB
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
+#include <tbb/parallel_for.h>
 
 // edm4hep
 #include <edm4hep/MCParticle.h>
@@ -54,11 +54,11 @@ std::tuple<edm4hep::TrackMCParticleLinkCollection> TrackTruthAlg::operator()(
   }
 
   debug() << "Map size: " << trackerHit2SimHit.size() << endmsg;
-  
+
   // Best match ifo for each MCParticle
   struct MatchInfo {
-    edm4hep::Track  track;
-    float           frac = 0.f;
+    edm4hep::Track track;
+    float          frac = 0.f;
   };
 
   // Thread-local best maps
@@ -70,11 +70,13 @@ std::tuple<edm4hep::TrackMCParticleLinkCollection> TrackTruthAlg::operator()(
     std::map<edm4hep::MCParticle, uint32_t> trackHit2Mc;
 
     for (std::size_t iTrack = r.begin(); iTrack != r.end(); ++iTrack) {
-      const auto& track = tracks[iTrack];
-      const auto& trackHits = track.getTrackerHits();
+      const auto& track      = tracks[iTrack];
+      const auto& trackHits  = track.getTrackerHits();
       const auto& nTrackHits = trackHits.size();
-      
-      if (nTrackHits == 0) { continue; }
+
+      if (nTrackHits == 0) {
+        continue;
+      }
 
       // Clear the per-track hit counter
       trackHit2Mc.clear();
@@ -85,8 +87,8 @@ std::tuple<edm4hep::TrackMCParticleLinkCollection> TrackTruthAlg::operator()(
           continue;  // No sim hit found for this tracker hit
         }
 
-        const auto& simHit    = it->second;
-        auto        particle  = simHit.getParticle();
+        const auto& simHit   = it->second;
+        auto        particle = simHit.getParticle();
         if (particle.isAvailable()) {
           ++trackHit2Mc[particle];  //Increment MC Particle counter
         }
@@ -94,28 +96,25 @@ std::tuple<edm4hep::TrackMCParticleLinkCollection> TrackTruthAlg::operator()(
 
       // Update Best Matches
       for (const auto& [mcParticle, hitCount] : trackHit2Mc) {
-        const float frac = static_cast<float>(hitCount) / 
-                           static_cast<float>(nTrackHits);
+        const float frac = static_cast<float>(hitCount) / static_cast<float>(nTrackHits);
 
         auto       matchIt = localBest.find(mcParticle);
         const bool better  = (matchIt == localBest.end()) ||  // no best matches exist
-                             ((matchIt->second).frac < frac);  // this match is better (more hits on track)
+                            ((matchIt->second).frac < frac);  // this match is better (more hits on track)
         if (better) {
           auto& matchInfo = (matchIt == localBest.end()) ? localBest[mcParticle] : matchIt->second;
           matchInfo.track = track;
           matchInfo.frac  = frac;
         }
       }
-    } // for each track
+    }  // for each track
   };  // parallelTrackSearching
 
   // Run in parallel if more than one thread is requested
   if (m_numThreads > 1) {
     tbb::task_arena arena(m_numThreads.value());
-    arena.execute([&] {
-      tbb::parallel_for(tbb::blocked_range<size_t>(0, tracks.size()), parallelTrackSearching);
-    });
-  } else { // Serial execution
+    arena.execute([&] { tbb::parallel_for(tbb::blocked_range<size_t>(0, tracks.size()), parallelTrackSearching); });
+  } else {  // Serial execution
     parallelTrackSearching(tbb::blocked_range<size_t>(0, tracks.size()));
   }
 
@@ -124,8 +123,8 @@ std::tuple<edm4hep::TrackMCParticleLinkCollection> TrackTruthAlg::operator()(
   tlsBestMaps.combine_each([&](const std::map<edm4hep::MCParticle, MatchInfo>& localBest) {
     for (const auto& [mcParticle, matchInfo] : localBest) {
       auto       matchIt = mcBestMatch.find(mcParticle);
-      const bool better  = (matchIt == mcBestMatch.end()) ||  // no best matches exist
-                           ((matchIt->second).frac < matchInfo.frac);  // this match is better (more hits on track)
+      const bool better  = (matchIt == mcBestMatch.end()) ||          // no best matches exist
+                          ((matchIt->second).frac < matchInfo.frac);  // this match is better (more hits on track)
       if (better) {
         mcBestMatch[mcParticle] = matchInfo;
       }
