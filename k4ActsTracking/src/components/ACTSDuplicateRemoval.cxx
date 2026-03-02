@@ -53,12 +53,6 @@ namespace ACTSTracking {
   }
 
   /**
- * @brief Workaround function to get around comparision issue
- * @param hit1 A hit
- * @param hits A hit
- */
-
-  /**
  * @brief Determine which of two tracks is of better quality
  * @details Quality is determined first by number of hits, then by chi2
  * @param trk1 One of two tracks to compare
