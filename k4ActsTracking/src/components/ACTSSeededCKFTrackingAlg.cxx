@@ -471,7 +471,7 @@ std::tuple<edm4hep::TrackCollection, edm4hep::TrackCollection> ACTSSeededCKFTrac
         // Add seed to collection, all building of seed under the lock
         {
           std::lock_guard<std::mutex> lock(seedMutex);
-          auto seedTrack = seedCollection.create();
+          auto                        seedTrack = seedCollection.create();
           for (const ACTSTracking::SeedSpacePoint* sp : seed.sp()) {
             seedTrack.addToTrackerHits(sp->sourceLink().edm4hepHit());
           }
