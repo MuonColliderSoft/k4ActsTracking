@@ -57,7 +57,6 @@ namespace ACTSTracking {
  * @param hit1 A hit
  * @param hits A hit
  */
-  bool hitEqual(const edm4hep::TrackerHit& hit1, const edm4hep::TrackerHit& hit2) { return hit1 == hit2; }
 
   /**
  * @brief Determine which of two tracks is of better quality
